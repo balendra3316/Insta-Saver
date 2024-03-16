@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import axios from "axios";
 import { Button, TextField } from "@mui/material";
@@ -25,16 +26,29 @@ const Stories = () => {
 
   const handleClick = async () => {
     setLoading(true);
-
+  
+    // Extracting the username from the URL
+    const urlParts = url.split("/");
+    const usernameIndex = urlParts.indexOf("stories") + 1;
+    const username = urlParts[usernameIndex];
+  
+    // Check if the extracted username is empty or contains invalid characters
+    if (!username || !/^[a-zA-Z0-9_]+$/.test(username)) {
+      setIsError(true);
+      setLoading(false);
+      hideAlerts();
+      return;
+    }
+  
     const options = {
       method: "GET",
-      url: `https://instagram-bulk-scraper-latest.p.rapidapi.com/download_story/${url}`,
+      url: `https://instagram-bulk-scraper-latest.p.rapidapi.com/download_story/${username}`,
       headers: {
         "X-RapidAPI-Key": apiKey,
         "X-RapidAPI-Host": "instagram-bulk-scraper-latest.p.rapidapi.com",
       },
     };
-
+  
     try {
       const response = await axios.request(options);
       const storiesData = response.data.data.stories;
@@ -42,7 +56,7 @@ const Stories = () => {
         storyImage: story.image_versions2.candidates[3].url,
         storyVideo: story.video_versions[0].url,
       }));
-
+  
       if (storiesData.length > 0) {
         setStories(storyImages);
       } else {
@@ -55,6 +69,8 @@ const Stories = () => {
       setLoading(false);
     }
   };
+  
+  
 
   const handleDownload = (videoUrl) => {
     setIsDownloading(true);
